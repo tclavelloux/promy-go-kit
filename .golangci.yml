@@ -4,6 +4,13 @@ run:
   timeout: 5m
   concurrency: 8
 linters:
+  settings:
+    goconst:
+      # In table-driven tests the repeated literal is the fixture: independent
+      # data that happens to be equal, not one shared concept. Hoisting it into
+      # a constant couples cases that should stay free to diverge.
+      ignore-tests: true
+      ignore-map-keys: true
   enable:
     - asasalint
     - asciicheck
@@ -54,13 +61,6 @@ linters:
     - unparam
     - usestdlibvars
     - whitespace
-  settings:
-    goconst:
-      # In table-driven tests the repeated literal is the fixture: independent
-      # data that happens to be equal, not one shared concept. Hoisting it into
-      # a constant couples cases that should stay free to diverge.
-      ignore-tests: true
-      ignore-map-keys: true
   exclusions:
     generated: lax
     paths:

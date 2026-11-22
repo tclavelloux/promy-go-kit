@@ -1,0 +1,3 @@
+# Required by fxconfig for APP_ENV=dev; values come from config.yaml.
+app:
+  env: dev
