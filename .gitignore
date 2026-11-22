@@ -1,12 +1,38 @@
-.env
-.idea
-/build/*
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary
+*.test
+
+# Output
+*.out
+
+# Go workspace
+vendor/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
 .DS_Store
+
+# Environment
+.env
+.env.local
 
 # Test coverage
 *.cover
 coverage.out
 coverage.html
 
-# Railway IaC
-.railway/node_modules/
+# Build artifacts
+bin/
+dist/

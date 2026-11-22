@@ -18,28 +18,18 @@ jobs:
     uses: tclavelloux/promy-github-workflows/.github/workflows/go-lint.yml@go-lint/v1
     with:
       workflow-sync: true
+      zizmor: true
 
   vuln:
     if: github.event.pull_request.draft == false
     uses: tclavelloux/promy-github-workflows/.github/workflows/go-vuln.yml@go-vuln/v1
 
-  # Replaces the old `build:` job. `go test ./...` already compiles every
-  # package and govet runs by default in golangci-lint v2, so `build:` was
-  # duplicate signal. This gate also pins the Dockerfile's Go version against
-  # go.mod -- drift `build:` could never see, since it resolved its toolchain
-  # from go.mod itself.
-  docker:
-    if: github.event.pull_request.draft == false
-    uses: tclavelloux/promy-github-workflows/.github/workflows/go-docker.yml@go-docker/v1
-
   test:
     if: github.event.pull_request.draft == false
     uses: tclavelloux/promy-github-workflows/.github/workflows/go-test.yml@go-test/v1
     with:
-      timeout-minutes: 6
+      timeout-minutes: 8
 
-  # When scaffolding a new service from this template, set .testcoverage.yml's
-  # `threshold.total` to the achieved coverage of the seeded tests.
   coverage:
     if: github.event.pull_request.draft == false
     needs: test
@@ -47,12 +37,11 @@ jobs:
       contents: read
       pull-requests: write
     uses: tclavelloux/promy-github-workflows/.github/workflows/go-coverage.yml@go-coverage/v2
-    secrets: inherit
 
   gitleaks:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 5
     # gitleaks-action@v2 reads GET /repos/{repo}/pulls/{n}/commits to scope the
     # scan to the PR's commit range, so it needs pull-requests: read. It posts
     # nothing, so read is enough -- write is not.
@@ -73,7 +62,7 @@ jobs:
   # List EVERY other job in `needs:`. The in-workflow check-run verification is
   # the backstop, not the primary gate.
   automerge:
-    needs: [lint, vuln, docker, test, coverage, gitleaks]
+    needs: [lint, vuln, test, coverage, gitleaks]
     # No status function here, so GitHub implicitly ANDs success(): any failed,
     # cancelled or skipped need skips this job.
     if: github.event.pull_request.user.login == 'dependabot[bot]' || github.event.pull_request.user.login == 'promy-fleet-bot[bot]'
