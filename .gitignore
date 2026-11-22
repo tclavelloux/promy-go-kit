@@ -1,0 +1,12 @@
+.env
+.idea
+/build/*
+.DS_Store
+
+# Test coverage
+*.cover
+coverage.out
+coverage.html
+
+# Railway IaC
+.railway/node_modules/

@@ -1,0 +1,19 @@
+app:
+  debug: true
+modules:
+  log:
+    level: debug
+    output: test
+  trace:
+    processor:
+      type: test
+  sql:
+    dsn: user:password@memory(bufconn)/testdb?parseTime=true
+    migrations:
+      path: db/migrations
+  gomysqlserver:
+    config:
+      transport: memory
+      user: user
+      password: password
+      database: testdb

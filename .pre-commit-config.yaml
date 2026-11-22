@@ -1,0 +1,93 @@
+# `pre-commit install` only writes the hook types listed here. Without this line it writes
+# .git/hooks/pre-commit alone, and the commit-msg and pre-push stages below never fire.
+default_install_hook_types: [pre-commit, commit-msg, pre-push]
+# Hooks that declare no `stages` would otherwise also run at commit-msg and pre-push.
+default_stages: [pre-commit]
+
+repos:
+  - repo: https://github.com/tclavelloux/promy-github-workflows
+    rev: hooks/v1.14.0
+    hooks:
+      - id: no-direct-commit-to-main
+      - id: workflow-sync
+      - id: go-vuln
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        stages: [pre-commit]
+      - id: end-of-file-fixer
+        stages: [pre-commit]
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        stages: [pre-commit]
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.6.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args:
+          - feat
+          - fix
+          - docs
+          - style
+          - refactor
+          - perf
+          - test
+          - build
+          - ci
+          - chore
+          - revert
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2
+    hooks:
+      - id: gitleaks
+
+  # golangci-lint is run as a local hook (not the upstream golangci/golangci-lint
+  # pre-commit repo) because that repo requires a literal `rev:` per version. Running
+  # it via scripts/golangci-lint.sh instead keeps the pinned version in one syncable
+  # place: .golangci-version (must match .github/workflows/ci.yml).
+  - repo: local
+    hooks:
+      - id: golangci-lint
+        name: golangci-lint
+        entry: scripts/golangci-lint.sh run --timeout=5m
+        language: system
+        types: [go]
+        pass_filenames: false
+        require_serial: true
+      - id: golangci-lint-fmt
+        name: golangci-lint-fmt
+        entry: scripts/golangci-lint.sh fmt --diff
+        language: system
+        types: [go]
+        pass_filenames: false
+        require_serial: true
+      - id: golangci-lint-config-verify
+        name: golangci-lint-config-verify
+        entry: scripts/golangci-lint.sh config verify
+        language: system
+        files: '\.golangci\.(yml|yaml)$'
+        pass_filenames: false
+      - id: go-mod-tidy
+        name: go-mod-tidy
+        entry: scripts/go-mod-tidy.sh
+        language: system
+        pass_filenames: false
+        files: '(\.go|go\.mod|go\.sum)$'
+      # Pre-push coverage gate: `make check-coverage` runs the race suite itself, so there is
+      # deliberately no separate `test` pre-push hook (it would run the suite twice per push).
+      # `always_run` keeps the gate firing on pushes that touch no .go files.
+      - id: check-coverage
+        name: check-coverage
+        entry: make check-coverage
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]

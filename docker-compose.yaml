@@ -1,0 +1,92 @@
+services:
+  promotion-app-server:
+    build:
+      dockerfile: dev.Dockerfile
+      context: .
+    networks:
+      - promotion-app-network
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    expose:
+      - "8080"
+      - "8081"
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      migration-runner:
+        condition: service_completed_successfully
+      promotion-jaeger:
+        condition: service_started
+
+  promotion-database:
+    container_name: promotion-database
+    image: mysql:8.0
+    restart: always
+    networks:
+      - promotion-app-network
+    ports:
+      - "3306:3306"
+    env_file:
+      - .env
+    volumes:
+      - promotion-database-data:/var/lib/mysql
+      - ./db/migrations:/docker-entrypoint-initdb.d
+    command: --default-authentication-plugin=mysql_native_password
+    # Add health check
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      timeout: 20s
+      retries: 10
+      interval: 10s
+      start_period: 40s
+
+  migration-runner:
+    build:
+      dockerfile: dev.Dockerfile
+      context: .
+    networks:
+      - promotion-app-network
+    env_file:
+      - .env
+    depends_on:
+      promotion-database:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    command: >
+      sh -c "
+        echo 'Waiting for database to be ready...' &&
+        sleep 10 &&
+        echo 'Running database migrations...' &&
+        go run main.go migrate-database up &&
+        echo 'Migrations completed successfully!' &&
+        echo 'Migration status:' &&
+        go run main.go migrate-database status &&
+        echo 'Migration runner completed successfully!' &&
+        exit 0
+      "
+    restart: "no"
+
+  promotion-jaeger:
+    container_name: promotion-jaeger
+    image: jaegertracing/all-in-one
+    networks:
+      - promotion-app-network
+    ports:
+      - "4317:4317"
+      - "16686:16686"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+
+volumes:
+  promotion-database-data:
+    driver: local
+  promotion-jaeger-data:
+    driver: local
+
+networks:
+  promotion-app-network:
+    driver: bridge
