@@ -1,0 +1,10 @@
+app:
+  name: fxotlphttp-test
+  env: ${APP_ENV}
+modules:
+  log:
+    level: debug
+    output: test
+  trace:
+    processor:
+      type: ${TRACE_PROCESSOR_TYPE}
