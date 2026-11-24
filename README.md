@@ -35,6 +35,7 @@ go get github.com/tclavelloux/promy-go-kit
 fxotlphttp/
 ├── module.go        # Module, DecorateTracerProviderFactory, Factory
 ├── module_test.go   # fx app tests against an httptest OTLP receiver
+├── export_test.go   # swaps the exporter constructor in tests
 └── testdata/        # Yokai config for the tests
 ```
 
@@ -43,6 +44,7 @@ fxotlphttp/
 - `Module` is a root-level `fx.Options` holding one `fx.Decorate` on `trace.TracerProviderFactory`. Not an `fx.Module`: fx scopes a decorator to its declaring module, and Yokai's trace module consumes the factory.
 - Yokai maps the unknown `otlp-http` type to its noop processor; the decorated factory appends an `otlptracehttp` batch span processor next to it.
 - `otlp-http` with no `OTEL_EXPORTER_OTLP_ENDPOINT` or `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`: logs a warning, exports nothing, never fails boot.
+- Exporter construction fails: logs a warning and builds the provider without the OTLP processor.
 - Any other processor type: factory returned unchanged.
 - Shutdown: Yokai's trace module flushes and shuts down every registered processor.
 
@@ -70,3 +72,5 @@ fxotlphttp/
 - [HOWTO.md](HOWTO.md): wiring, configuration, development
 - [CHANGELOG.md](CHANGELOG.md)
 - [Fleet architecture](https://github.com/tclavelloux/promy-steering/blob/main/ARCHITECTURE.md)
+
+<!-- readme-updated-at: 2a35d20 -->
