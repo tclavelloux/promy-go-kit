@@ -32,13 +32,8 @@ Set no endpoint in YAML. The exporter reads the standard variables:
 
 - `service.name` always comes from `app.name`: Yokai's trace resource ignores `OTEL_SERVICE_NAME`.
 
-Enable Railway tracing in the service's `.railway/railway.ts`:
+Enable Railway tracing and keep its injected variables: see [promy-template-go HOWTO](https://github.com/tclavelloux/promy-template-go/blob/main/HOWTO.md).
 
-```ts
-tracing: { enabled: true },
-```
-
-- A variable set on the service wins over Railway's: setting your own `OTEL_EXPORTER_OTLP_ENDPOINT` stops Railway injecting its tracing variables.
 - Switch sinks (for example to Grafana Cloud) by setting `OTEL_EXPORTER_OTLP_ENDPOINT` and `OTEL_EXPORTER_OTLP_HEADERS` and removing the `tracing` block. No code change.
 - No endpoint at boot: one warning `otlp-http trace processor without OTEL_EXPORTER_OTLP_ENDPOINT, spans are not exported`, then the service runs without exporting.
 
