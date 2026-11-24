@@ -11,7 +11,7 @@
 
 ## Overview
 
-Go library of shared code that depends on the [Yokai](https://github.com/ankorstore/yokai) framework, imported by the `promy-*` services. Framework-free shared code stays in [promy-event-bus](https://github.com/tclavelloux/promy-event-bus).
+Go library of the shared code that two or more Go repositories of the fleet use.
 
 **Module:** `github.com/tclavelloux/promy-go-kit`
 
@@ -65,7 +65,7 @@ fxotlphttp/
 ### Not owned by this library
 
 - Span, propagation and logging conventions: `~/.claude/rules/yokai-go-observability.md`.
-- Framework-free shared code: [promy-event-bus](https://github.com/tclavelloux/promy-event-bus).
+- Event bus (Redis Streams publish/subscribe): [promy-event-bus](https://github.com/tclavelloux/promy-event-bus).
 
 ## Resources
 
